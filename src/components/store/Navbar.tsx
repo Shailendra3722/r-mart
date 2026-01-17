@@ -163,8 +163,22 @@ export function Navbar() {
                     </Link>
                 </div>
 
-                {/* Mobile Cart Icon (Always Visible) */}
-                <div className="flex lg:hidden items-center gap-4">
+                {/* Mobile Icons (Cart & User) */}
+                <div className="flex lg:hidden items-center gap-3">
+                    {/* User / Login Icon */}
+                    <Link href={isAuthenticated ? "/orders" : "/login"} className="p-2 text-slate-900">
+                        {isAuthenticated ? (
+                            <img
+                                src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.mobile || user?.name || 'User')}&background=0D8ABC&color=fff`}
+                                alt="Profile"
+                                className="h-6 w-6 rounded-full"
+                            />
+                        ) : (
+                            <User className="h-6 w-6" />
+                        )}
+                    </Link>
+
+                    {/* Cart Icon */}
                     <Link href="/cart" className="relative p-2 text-slate-900">
                         <ShoppingBag className="h-6 w-6" />
                         {itemCount > 0 && (

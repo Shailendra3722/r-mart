@@ -81,7 +81,7 @@ export function HeroCarousel() {
     return (
         <div className="relative mx-2 mt-2 overflow-hidden rounded-xl sm:mx-4 group z-0">
             <div
-                className="flex transition-transform duration-500 ease-out h-[400px] sm:h-[500px]"
+                className="flex transition-transform duration-500 ease-out h-[250px] sm:h-[400px] lg:h-[500px]"
                 style={{ transform: `translateX(-${current * 100}%)` }}
             >
                 {slides.map((slide) => (
