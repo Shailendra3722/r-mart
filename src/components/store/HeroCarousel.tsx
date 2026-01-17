@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import FadeIn from "../animations/FadeIn";
 
 const slides = [
     {
@@ -100,24 +102,35 @@ export function HeroCarousel() {
 
                         {/* Content */}
                         <div className="relative container mx-auto flex h-full flex-col justify-center px-6 text-white sm:px-12 lg:px-16">
-                            <span className="mb-4 inline-block w-fit rounded-full bg-white/20 px-4 py-1.5 text-sm font-semibold backdrop-blur-sm animate-fade-in-up">
-                                {slide.title}
-                            </span>
-                            <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl animate-fade-in-up delay-100">
-                                {slide.subtitle.split(' ').slice(0, 2).join(' ')} <br />
-                                <span className={slide.accent}>{slide.subtitle.split(' ').slice(2).join(' ')}</span>
-                            </h1>
-                            <p className="mb-8 max-w-xl text-lg text-white/90 sm:text-xl animate-fade-in-up delay-200">
-                                {slide.description}
-                            </p>
-                            <div className="flex gap-4 animate-fade-in-up delay-300">
-                                <Link
-                                    href={slide.link}
-                                    className="flex items-center rounded-full bg-white px-8 py-3 text-base font-bold text-slate-900 transition-colors hover:bg-slate-100"
-                                >
-                                    {slide.cta} <ArrowRight className="ml-2 h-5 w-5" />
-                                </Link>
-                            </div>
+                            <FadeIn direction="down" delay={0.1}>
+                                <span className="mb-4 inline-block w-fit rounded-full bg-white/20 px-4 py-1.5 text-sm font-semibold backdrop-blur-sm">
+                                    {slide.title}
+                                </span>
+                            </FadeIn>
+
+                            <FadeIn direction="left" delay={0.2}>
+                                <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
+                                    {slide.subtitle.split(' ').slice(0, 2).join(' ')} <br />
+                                    <span className={slide.accent}>{slide.subtitle.split(' ').slice(2).join(' ')}</span>
+                                </h1>
+                            </FadeIn>
+
+                            <FadeIn direction="up" delay={0.3}>
+                                <p className="mb-8 max-w-xl text-lg text-white/90 sm:text-xl">
+                                    {slide.description}
+                                </p>
+                            </FadeIn>
+
+                            <FadeIn direction="up" delay={0.4}>
+                                <div className="flex gap-4">
+                                    <Link
+                                        href={slide.link}
+                                        className="flex items-center rounded-full bg-white px-8 py-3 text-base font-bold text-slate-900 transition-colors hover:bg-slate-100"
+                                    >
+                                        {slide.cta} <ArrowRight className="ml-2 h-5 w-5" />
+                                    </Link>
+                                </div>
+                            </FadeIn>
                         </div>
                     </div>
                 ))}

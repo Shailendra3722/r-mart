@@ -4,6 +4,8 @@ import { useState, use } from 'react';
 import { useStore } from '@/context/StoreContext';
 import { Star, Check, ShieldCheck, Truck, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import TapButton from '@/components/animations/TapButton';
+import FadeIn from '@/components/animations/FadeIn';
 
 export default function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { products, addToCart } = useStore();
@@ -121,13 +123,13 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
                             </div>
                         </div>
 
-                        <button
+                        <TapButton
                             onClick={handleAddToCart}
                             disabled={adding}
                             className="mt-8 flex w-full items-center justify-center rounded-md border border-transparent bg-emerald-600 px-8 py-3 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:bg-emerald-400"
                         >
                             {adding ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Adding...</> : 'Add to Cart'}
-                        </button>
+                        </TapButton>
 
                         <div className="mt-6 flex items-center justify-center gap-6 text-sm text-slate-500">
                             <div className="flex items-center gap-2">

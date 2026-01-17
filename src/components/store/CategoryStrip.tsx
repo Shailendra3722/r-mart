@@ -1,9 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { Shirt, ShoppingBag, Gift, Baby, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ScaleHover from "../animations/ScaleHover";
 
 export function CategoryStrip() {
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -60,11 +59,11 @@ export function CategoryStrip() {
                             if (!cat.sub) router.push(cat.href);
                         }}
                     >
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 transition-colors group-hover:bg-slate-100">
+                        <ScaleHover scale={1.1} className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 transition-colors group-hover:bg-slate-100">
                             <div className="text-slate-700 group-hover:text-primary">
                                 {cat.icon}
                             </div>
-                        </div>
+                        </ScaleHover>
                         <span className="text-sm font-medium text-slate-700 group-hover:text-primary whitespace-nowrap">
                             {cat.name}
                         </span>
