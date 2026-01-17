@@ -61,7 +61,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
                     </FadeIn>
 
                     {/* Thumbnails */}
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-4 gap-3 sm:gap-4">
                         {galleryImages.map((img, index) => (
                             <ScaleHover key={index} scale={1.05} className="cursor-pointer">
                                 <div
@@ -77,15 +77,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
                 </div>
 
                 {/* --- Right Column: Product Info --- */}
-                <div className="mt-10 px-4 sm:px-0 sm:mt-16 lg:mt-0">
+                <div className="mt-8 px-0 sm:mt-16 lg:mt-0">
                     <FadeIn direction="left" delay={0.1}>
-                        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-2">{product.name}</h1>
-                        <p className="text-sm text-slate-500 mb-6 uppercase tracking-wide font-semibold">{product.category}</p>
+                        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">{product.name}</h1>
+                        <p className="text-xs sm:text-sm text-slate-500 mb-4 sm:mb-6 uppercase tracking-wide font-semibold">{product.category}</p>
                     </FadeIn>
 
                     <FadeIn direction="left" delay={0.2}>
-                        <div className="flex items-end gap-4 mb-6">
-                            <p className="text-4xl font-bold text-slate-900">₹{product.price}</p>
+                        <div className="flex items-end gap-3 sm:gap-4 mb-6">
+                            <p className="text-3xl sm:text-4xl font-bold text-slate-900">₹{product.price}</p>
                             {product.discount && product.discount > 0 && (
                                 <>
                                     <p className="text-xl text-slate-400 line-through mb-1">₹{Math.round(product.price * (1 + product.discount / 100))}</p>
