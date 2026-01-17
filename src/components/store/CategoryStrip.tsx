@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ScaleHover from "../animations/ScaleHover";
 
-export function CategoryStrip() {
+interface CategoryStripProps {
+    overlay?: boolean;
+}
+
+export function CategoryStrip({ overlay = false }: CategoryStripProps) {
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const router = useRouter();
 
@@ -47,8 +51,8 @@ export function CategoryStrip() {
     ];
 
     return (
-        <div className="w-full bg-white shadow-sm relative z-40">
-            <div className="container mx-auto flex items-center justify-between gap-4 overflow-x-auto px-4 py-3 pb-4 sm:px-6 lg:justify-center lg:gap-12 lg:px-8 no-scrollbar">
+        <div className={`w-full relative z-40 ${overlay ? 'bg-transparent' : 'bg-white shadow-sm'}`}>
+            <div className={`container mx-auto flex items-center justify-between gap-4 overflow-x-auto px-4 py-3 pb-4 sm:px-6 lg:justify-center lg:gap-12 lg:px-8 no-scrollbar ${overlay ? 'bg-white/80 backdrop-blur-md mt-2 mx-2 rounded-xl sm:mx-4' : ''}`}>
                 {categories.map((cat) => (
                     <div
                         key={cat.name}
@@ -59,12 +63,12 @@ export function CategoryStrip() {
                             if (!cat.sub) router.push(cat.href);
                         }}
                     >
-                        <ScaleHover scale={1.1} className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 transition-colors group-hover:bg-slate-100">
+                        <ScaleHover scale={1.1} className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full transition-colors ${overlay ? 'bg-white/50 group-hover:bg-white' : 'bg-slate-50 group-hover:bg-slate-100'}`}>
                             <div className="text-slate-700 group-hover:text-primary">
                                 {cat.icon}
                             </div>
                         </ScaleHover>
-                        <span className="text-sm font-medium text-slate-700 group-hover:text-primary whitespace-nowrap">
+                        <span className="text-xs sm:text-sm font-medium text-slate-900 group-hover:text-primary whitespace-nowrap">
                             {cat.name}
                         </span>
 

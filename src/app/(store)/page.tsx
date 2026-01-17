@@ -15,11 +15,12 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col gap-6 pb-10 bg-slate-50">
 
-      {/* Category Strip (Flipkart Style) */}
-      <CategoryStrip />
-
-      {/* Hero Carousel */}
-      <HeroCarousel />
+      <div className="relative">
+        <div className="absolute top-0 left-0 right-0 z-20">
+          <CategoryStrip overlay={true} />
+        </div>
+        <HeroCarousel />
+      </div>
 
       {/* Deals of the Day */}
       <section className="mx-2 rounded-xl bg-white p-4 shadow-sm sm:mx-4 sm:p-6">
