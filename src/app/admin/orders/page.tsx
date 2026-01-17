@@ -10,9 +10,33 @@ export default function OrdersPage() {
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
+    // Logistics Modal State
+    const [isShipModalOpen, setIsShipModalOpen] = useState(false);
+    const [orderToShip, setOrderToShip] = useState<any>(null);
+    const [logisticsData, setLogisticsData] = useState({ courier: 'E-kart', trackingId: '', awbNumber: '' });
+
     const handleViewDetails = (order: any) => {
         setSelectedOrder(order);
         setIsDetailsModalOpen(true);
+    };
+
+    const handleStatusChange = (orderId: string, newStatus: string) => {
+        if (newStatus === 'Shipped') {
+            setOrderToShip(orders.find(o => o.id === orderId));
+            setIsShipModalOpen(true);
+        } else {
+            updateOrderStatus(orderId, newStatus as any);
+        }
+    };
+
+    const submitShipment = async () => {
+        if (!orderToShip) return;
+        if (!logisticsData.trackingId) return alert("Please enter a Tracking ID");
+
+        await updateOrderStatus(orderToShip.id, 'Shipped', logisticsData);
+        setIsShipModalOpen(false);
+        setOrderToShip(null);
+        setLogisticsData({ courier: 'E-kart', trackingId: '', awbNumber: '' });
     };
 
     return (
@@ -59,6 +83,9 @@ export default function OrdersPage() {
                                 Amount
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                                Location
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                                 Status
                             </th>
                             <th scope="col" className="relative px-6 py-3">
@@ -94,10 +121,13 @@ export default function OrdersPage() {
                                 <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900">
                                     ₹{order.total}
                                 </td>
+                                <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
+                                    {order.shippingAddress?.city}, {order.shippingAddress?.state}
+                                </td>
                                 <td className="whitespace-nowrap px-6 py-4">
                                     <select
                                         value={order.status}
-                                        onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
                                         className={`rounded-full px-2 py-1 text-xs font-semibold leading-5 border-0 cursor-pointer focus:ring-2 focus:ring-primary ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
                                             order.status === 'Pending' ? 'bg-orange-100 text-orange-800' :
                                                 order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
@@ -126,6 +156,59 @@ export default function OrdersPage() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Ship Order Modal */}
+            {isShipModalOpen && orderToShip && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-6">
+                        <h2 className="text-xl font-bold text-slate-900 mb-4">Ship Order #{orderToShip.id.replace(/^ORD-/, '')}</h2>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Select Courier</label>
+                                <select
+                                    className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    value={logisticsData.courier}
+                                    onChange={(e) => setLogisticsData({ ...logisticsData, courier: e.target.value })}
+                                >
+                                    <option value="E-kart">E-kart</option>
+                                    <option value="Xpressbees">Xpressbees</option>
+                                    <option value="Delhivery">Delhivery</option>
+                                    <option value="BlueDart">BlueDart</option>
+                                    <option value="DTDC">DTDC</option>
+                                    <option value="Shadowfax">Shadowfax</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Tracking ID / AWB</label>
+                                <input
+                                    type="text"
+                                    className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    placeholder="Enter Tracking Number"
+                                    value={logisticsData.trackingId}
+                                    onChange={(e) => setLogisticsData({ ...logisticsData, trackingId: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    onClick={() => setIsShipModalOpen(false)}
+                                    className="flex-1 rounded-lg border border-slate-300 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={submitShipment}
+                                    className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                                >
+                                    Confirm Shipment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Order Details Modal */}
             {isDetailsModalOpen && selectedOrder && (
@@ -170,7 +253,9 @@ export default function OrdersPage() {
                                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
                                     <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Shipping Address</h3>
                                     <p className="text-sm text-slate-600 leading-relaxed">
-                                        {selectedOrder.address}
+                                        {selectedOrder.shippingAddress?.address}<br />
+                                        {selectedOrder.shippingAddress?.landmark && <>{selectedOrder.shippingAddress.landmark}<br /></>}
+                                        {selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.state} - {selectedOrder.shippingAddress?.pincode}
                                     </p>
                                 </div>
                             </div>

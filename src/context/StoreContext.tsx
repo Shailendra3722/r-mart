@@ -20,13 +20,21 @@ export type Order = {
     status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
     date: string;
     paymentMethod: string;
-    paymentStatus: 'Paid' | 'Pending';
+    paymentStatus: 'Paid' | 'Pending' | 'Failed';
     transactionId?: string;
-    address: string;
-    landmark: string;
-    city: string;
-    state: string;
-    pincode: string;
+    shippingAddress: {
+        name: string;
+        mobile: string;
+        address: string;
+        landmark?: string;
+        city: string;
+        state: string;
+        pincode: string;
+    };
+    // Logistics Fields
+    courier?: string; // e.g., 'E-kart', 'Xpressbees'
+    trackingId?: string;
+    awbNumber?: string;
 };
 
 type StoreContextType = {
@@ -44,7 +52,7 @@ type StoreContextType = {
     updateQuantity: (cartId: string, delta: number) => void;
     clearCart: () => void;
     placeOrder: (customerDetails: any, paymentMethod: string, transactionId?: string) => Promise<void>;
-    updateOrderStatus: (id: string, status: Order['status']) => Promise<void>;
+    updateOrderStatus: (id: string, status: Order['status'], logisticsData?: { courier: string; trackingId: string; awbNumber: string }) => Promise<void>;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -207,17 +215,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const updateOrderStatus = async (id: string, status: Order['status']) => {
+    const updateOrderStatus = async (id: string, status: Order['status'], logisticsData?: { courier: string; trackingId: string; awbNumber: string }) => {
         // Optimistic update
         setOrders((prev) =>
-            prev.map((order) => (order.id === id ? { ...order, status } : order))
+            prev.map((order) => (order.id === id ? { ...order, status, ...logisticsData } : order))
         );
 
         try {
             const res = await fetch(`/api/orders/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status }),
+                body: JSON.stringify({ status, ...logisticsData }),
             });
 
             if (!res.ok) {

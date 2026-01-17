@@ -67,9 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 };
                 syncUserToDB();
+                // Don't clear simulated_mobile here, we might need it for re-login or it clears on explicit logout
+            } else {
                 setUser(null);
                 localStorage.removeItem('user_session');
-                // Don't clear simulated_mobile here, we might need it for re-login or it clears on explicit logout
             }
             setLoading(false);
         });
@@ -97,9 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
             return true;
-        } catch (error) {
+        } catch (error: any) {
             console.error("Google Login Error:", error);
-            return false;
+            throw error; // Re-throw to handle in component
         }
     };
 

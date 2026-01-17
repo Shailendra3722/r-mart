@@ -17,6 +17,9 @@ export async function PATCH(
         const updateData: any = {};
         if (status) updateData.status = status;
         if (paymentStatus) updateData.paymentStatus = paymentStatus;
+        if (body.courier) updateData.courier = body.courier;
+        if (body.trackingId) updateData.trackingId = body.trackingId;
+        if (body.awbNumber) updateData.awbNumber = body.awbNumber;
 
         // Use custom id (ORD-...) or _id depending on what frontend sends
         // Ideally we should use _id for Mongo, but our frontend uses custom IDs heavily

@@ -44,19 +44,27 @@ export default function UserOrdersPage() {
                                     <p className="text-sm font-medium text-slate-900">#{order.id.replace(/^ORD-/, '')}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                {order.status === 'Delivered' && <Check className="h-5 w-5 text-green-600" />}
-                                {order.status === 'Cancelled' && <X className="h-5 w-5 text-red-600" />}
-                                {order.status === 'Pending' && <Clock className="h-5 w-5 text-orange-600" />}
-                                {order.status === 'Shipped' && <Truck className="h-5 w-5 text-blue-600" />}
-                                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                            <div className="flex flex-col items-end gap-2">
+                                <div className="flex items-center gap-2">
+                                    {order.status === 'Delivered' && <Check className="h-5 w-5 text-green-600" />}
+                                    {order.status === 'Cancelled' && <X className="h-5 w-5 text-red-600" />}
+                                    {order.status === 'Pending' && <Clock className="h-5 w-5 text-orange-600" />}
+                                    {order.status === 'Shipped' && <Truck className="h-5 w-5 text-blue-600" />}
+                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
                                         order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
                                             order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
                                                 order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
                                                     'bg-orange-100 text-orange-800'
-                                    }`}>
-                                    {order.status}
-                                </span>
+                                        }`}>
+                                        {order.status}
+                                    </span>
+                                </div>
+                                {order.trackingId && (
+                                    <div className="text-right text-xs text-slate-500">
+                                        <p>Courier: <span className="font-medium text-slate-900">{order.courier}</span></p>
+                                        <p>Tracking: <span className="font-medium text-slate-900">{order.trackingId}</span></p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

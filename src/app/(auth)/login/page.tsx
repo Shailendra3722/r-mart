@@ -7,12 +7,17 @@ import { ShoppingBag, Loader2, Lock, ArrowRight, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
-    const { loginWithGoogle, loginWithEmail } = useAuth();
+    const { loginWithGoogle, loginWithEmail, isAuthenticated } = useAuth();
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    // Redirect if already logged in
+    if (isAuthenticated) {
+        router.push('/');
+    }
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,11 +47,12 @@ export default function LoginPage() {
             if (success) {
                 router.push('/');
             } else {
-                setError('Google login failed.');
+                // Error handled in AuthContext or generic
                 setIsLoading(false);
             }
-        } catch (err) {
-            setError('An unexpected error occurred.');
+        } catch (err: any) {
+            alert(`Login Error: ${err.message}`); // Show exact error
+            setError(err.message);
             setIsLoading(false);
         }
     };

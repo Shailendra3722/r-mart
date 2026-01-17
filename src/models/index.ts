@@ -50,7 +50,11 @@ const orderSchema = new Schema({
     paymentStatus: { type: String, enum: ['Paid', 'Pending', 'Failed'], default: 'Pending' },
     transactionId: { type: String },
     customerName: { type: String },
-    customerMobile: { type: String }
+    customerMobile: { type: String },
+    // Logistics
+    courier: { type: String },
+    trackingId: { type: String },
+    awbNumber: { type: String }
 });
 
 // --- User Schema ---
