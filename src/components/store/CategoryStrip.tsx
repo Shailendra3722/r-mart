@@ -52,29 +52,29 @@ export function CategoryStrip({ overlay = false }: CategoryStripProps) {
 
     return (
         <div className={`w-full relative z-40 ${overlay ? 'bg-transparent' : 'bg-white shadow-sm'}`}>
-            <div className={`container mx-auto flex items-center justify-between gap-4 overflow-x-auto px-4 py-3 pb-4 sm:px-6 lg:justify-center lg:gap-12 lg:px-8 no-scrollbar ${overlay ? 'bg-white/80 backdrop-blur-md mt-2 mx-2 rounded-xl sm:mx-4' : ''}`}>
+            <div className={`container mx-auto flex items-center justify-between gap-4 overflow-x-auto lg:overflow-visible px-4 py-3 pb-4 sm:px-6 lg:justify-center lg:gap-12 lg:px-8 no-scrollbar ${overlay ? 'bg-white/80 backdrop-blur-md mt-2 mx-2 rounded-xl sm:mx-4 shadow-sm' : ''}`}>
                 {categories.map((cat) => (
                     <div
                         key={cat.name}
-                        className="group relative flex flex-col items-center gap-2 cursor-pointer"
+                        className="group relative flex flex-col items-center gap-2 cursor-pointer flex-shrink-0"
                         onMouseEnter={() => setActiveCategory(cat.name)}
                         onMouseLeave={() => setActiveCategory(null)}
                         onClick={() => {
                             if (!cat.sub) router.push(cat.href);
                         }}
                     >
-                        <ScaleHover scale={1.1} className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full transition-colors ${overlay ? 'bg-white/50 group-hover:bg-white' : 'bg-slate-50 group-hover:bg-slate-100'}`}>
+                        <ScaleHover scale={1.1} className={`flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full transition-colors ${overlay ? 'bg-white/50 group-hover:bg-white' : 'bg-slate-50 group-hover:bg-slate-100'}`}>
                             <div className="text-slate-700 group-hover:text-primary">
                                 {cat.icon}
                             </div>
                         </ScaleHover>
-                        <span className="text-xs sm:text-sm font-medium text-slate-900 group-hover:text-primary whitespace-nowrap">
+                        <span className="text-[10px] sm:text-sm font-medium text-slate-900 group-hover:text-primary whitespace-nowrap">
                             {cat.name}
                         </span>
 
-                        {/* Mega Menu / Dropdown */}
+                        {/* Mega Menu / Dropdown - Hidden on Mobile */}
                         {cat.sub && activeCategory === cat.name && (
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 rounded-md bg-white shadow-xl ring-1 ring-black ring-opacity-5 z-50">
+                            <div className="hidden lg:block absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 rounded-md bg-white shadow-xl ring-1 ring-black ring-opacity-5 z-50">
                                 {/* Triangle Arrow */}
                                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-l border-t border-slate-100"></div>
 
