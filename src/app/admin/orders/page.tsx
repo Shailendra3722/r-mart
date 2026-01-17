@@ -167,7 +167,7 @@ export default function OrdersPage() {
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Select Courier</label>
                                 <select
-                                    className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm text-slate-900 bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
                                     value={logisticsData.courier}
                                     onChange={(e) => setLogisticsData({ ...logisticsData, courier: e.target.value })}
                                 >
@@ -184,7 +184,7 @@ export default function OrdersPage() {
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Tracking ID / AWB</label>
                                 <input
                                     type="text"
-                                    className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm text-slate-900 bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
                                     placeholder="Enter Tracking Number"
                                     value={logisticsData.trackingId}
                                     onChange={(e) => setLogisticsData({ ...logisticsData, trackingId: e.target.value })}
