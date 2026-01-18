@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, ShoppingBag, ShoppingCart, Users, BarChart } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, ShoppingCart, Users, BarChart, Settings } from "lucide-react";
 
 const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -7,6 +7,7 @@ const navigation = [
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { name: "Customers", href: "/admin/customers", icon: Users },
     { name: "Reports", href: "/admin/reports", icon: BarChart },
+    { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -28,12 +29,12 @@ export function Sidebar() {
                 ))}
             </nav>
             <div className="border-t p-4">
-                <div className="flex items-center">
+                <Link href="/admin/settings" className="flex items-center hover:opacity-80 transition cursor-pointer">
                     <div className="ml-3">
                         <p className="text-sm font-medium text-slate-700">Admin User</p>
-                        <p className="text-xs text-slate-500">View Profile</p>
+                        <p className="text-xs text-primary">View Profile</p>
                     </div>
-                </div>
+                </Link>
             </div>
         </div>
     );
