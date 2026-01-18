@@ -15,10 +15,8 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col gap-6 pb-10 bg-slate-50">
 
+      <CategoryStrip overlay={false} />
       <div className="relative">
-        <div className="absolute top-0 left-0 right-0 z-50">
-          <CategoryStrip overlay={true} />
-        </div>
         <HeroCarousel />
       </div>
 

@@ -83,14 +83,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const loginAdmin = async (email: string, password: string) => {
-        // Mock Admin Credentials (INTERNAL USE ONLY)
-        if (email === 'admin@rmart.com' && password === 'admin123') {
-            const adminData = { name: 'Super Admin', email };
-            setAdmin(adminData);
-            localStorage.setItem('admin_session', JSON.stringify(adminData));
-            return true;
+        try {
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                setAdmin(data.admin);
+                localStorage.setItem('admin_session', JSON.stringify(data.admin));
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            console.error("Admin Login Error:", error);
+            return false;
         }
-        return false;
     };
 
     const loginWithGoogle = async () => {

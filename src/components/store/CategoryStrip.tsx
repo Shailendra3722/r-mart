@@ -51,8 +51,8 @@ export function CategoryStrip({ overlay = false }: CategoryStripProps) {
     ];
 
     return (
-        <div className={`w-full relative z-40 ${overlay ? 'bg-transparent' : 'bg-white shadow-sm'}`}>
-            <div className={`container mx-auto flex items-center justify-between gap-4 overflow-x-auto lg:overflow-visible px-4 py-3 pb-4 sm:px-6 lg:justify-center lg:gap-12 lg:px-8 no-scrollbar ${overlay ? 'bg-white/80 backdrop-blur-md mt-2 mx-2 rounded-xl sm:mx-4 shadow-sm' : ''}`}>
+        <div className={`w-full relative z-40 ${overlay ? 'bg-transparent' : 'bg-white border-b border-slate-100'}`}>
+            <div className={`container mx-auto flex items-center justify-between gap-4 overflow-x-auto lg:overflow-visible px-4 py-3 sm:px-6 lg:justify-center lg:gap-12 lg:px-8 no-scrollbar ${overlay ? 'bg-white/80 backdrop-blur-md mt-2 mx-2 rounded-xl sm:mx-4 shadow-sm' : ''}`}>
                 {categories.map((cat) => (
                     <div
                         key={cat.name}
