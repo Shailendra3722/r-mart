@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
         if (success) {
             router.push('/admin'); // Redirect to admin dashboard
         } else {
-            setError('Invalid credentials. Use admin@rmart.com / admin123');
+            setError('Invalid email or password.');
         }
     };
 
@@ -84,9 +84,6 @@ export default function AdminLoginPage() {
                             </button>
                         </div>
                     </form>
-                    <div className="mt-4 text-center text-xs text-slate-500">
-                        (Default: admin@rmart.com / admin123)
-                    </div>
                 </div>
             </div>
         </div>
