@@ -22,6 +22,7 @@ type AuthContextType = {
     logout: () => Promise<void>;
     isAuthenticated: boolean;
     isAdminAuthenticated: boolean;
+    loading: boolean;
     auth: any; // Expose auth instance for components to use (e.g. phone auth)
 };
 
@@ -34,18 +35,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Listen for Firebase User (Real Auth)
+        let firebaseChecked = false;
+        let adminChecked = false;
+
+        const trySetLoadingFalse = () => {
+            if (firebaseChecked && adminChecked) {
+                setLoading(false);
+            }
+        };
+
+        // 1. Firebase Auth Listener
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
             if (firebaseUser) {
-                // Check if we have a simulated mobile number in local storage
                 const simulatedMobile = localStorage.getItem('simulated_mobile');
-
-                // Map Firebase user to our app's user format
                 const userData = {
                     uid: firebaseUser.uid,
                     name: firebaseUser.displayName || 'R Mart Customer',
                     email: firebaseUser.email,
-                    // Use real phone if available, otherwise fall back to simulated one
                     mobile: firebaseUser.phoneNumber || (simulatedMobile ? `+91${simulatedMobile}` : null),
                     photoURL: firebaseUser.photoURL,
                     emailVerified: firebaseUser.emailVerified
@@ -53,31 +59,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(userData);
                 localStorage.setItem('user_session', JSON.stringify(userData));
 
-                // SYNC TO MONGODB
-                // This allows the Admin Panel to see "Registered Customers" even before they order
-                const syncUserToDB = async () => {
-                    try {
-                        await fetch('/api/users/sync', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(userData),
-                        });
-                    } catch (error) {
-                        console.error("Failed to sync user to DB:", error);
-                    }
-                };
-                syncUserToDB();
-                // Don't clear simulated_mobile here, we might need it for re-login or it clears on explicit logout
+                // Sync to DB
+                fetch('/api/users/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData),
+                }).catch(err => console.error("Sync error", err));
+
             } else {
                 setUser(null);
                 localStorage.removeItem('user_session');
             }
-            setLoading(false);
+            firebaseChecked = true;
+            trySetLoadingFalse();
         });
 
-        // Check for Admin Session (Still Mock)
-        const savedAdmin = localStorage.getItem('admin_session');
-        if (savedAdmin) setAdmin(JSON.parse(savedAdmin));
+        // 2. Admin Session Verification
+        const checkAdminSession = async () => {
+            const savedAdmin = localStorage.getItem('admin_session');
+            if (savedAdmin) {
+                try {
+                    const parsedAdmin = JSON.parse(savedAdmin);
+                    // Verify with server
+                    if (parsedAdmin.sessionToken) {
+                        const res = await fetch('/api/admin/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: parsedAdmin.email,
+                                sessionToken: parsedAdmin.sessionToken
+                            }),
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            setAdmin(data.admin);
+                        } else {
+                            localStorage.removeItem('admin_session');
+                            setAdmin(null);
+                        }
+                    } else {
+                        // Legacy session or invalid structure
+                        localStorage.removeItem('admin_session');
+                        setAdmin(null);
+                    }
+                } catch (e) {
+                    console.error("Session check failed", e);
+                    localStorage.removeItem('admin_session');
+                    setAdmin(null);
+                }
+            }
+            adminChecked = true;
+            trySetLoadingFalse();
+        };
+
+        checkAdminSession();
 
         return () => unsubscribe();
     }, []);
@@ -216,6 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 logout,
                 isAuthenticated: !!user,
                 isAdminAuthenticated: !!admin,
+                loading,
                 auth // Export auth for LoginPage to use directly
             }}
         >

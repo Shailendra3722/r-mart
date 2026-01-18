@@ -11,26 +11,21 @@ export default function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { isAdminAuthenticated } = useAuth();
+    const { isAdminAuthenticated, loading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
-    const [loading, setLoading] = useState(true);
+    const [isChecking, setIsChecking] = useState(true); // Internal local check just in case
 
     const isLoginPage = pathname === '/admin/login';
 
     useEffect(() => {
-        if (isLoginPage) return; // Skip check for login page
+        if (loading) return; // Wait for auth check to finish
+        if (isLoginPage) return;
 
-        // Small delay to allow AuthContext to load from localStorage
-        const timer = setTimeout(() => {
-            if (!isAdminAuthenticated) {
-                router.push('/admin/login');
-            } else {
-                setLoading(false);
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [isAdminAuthenticated, router, isLoginPage]);
+        if (!isAdminAuthenticated) {
+            router.push('/admin/login');
+        }
+    }, [isAdminAuthenticated, loading, router, isLoginPage]);
 
     // If it's the login page, render children without Sidebar/Header
     if (isLoginPage) {

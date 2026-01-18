@@ -39,7 +39,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: 'Invalid email or password' }, { status: 401 });
         }
 
-        return NextResponse.json({ success: true, admin: { email: admin.email, name: admin.name } });
+        // 4. Generate Session Token using Web Crypto API
+        const sessionToken = crypto.randomUUID();
+        admin.sessionToken = sessionToken;
+        await admin.save();
+
+        return NextResponse.json({
+            success: true,
+            admin: {
+                email: admin.email,
+                name: admin.name,
+                sessionToken: sessionToken
+            }
+        });
 
     } catch (error) {
         console.error('Admin Login Error:', error);
