@@ -5,6 +5,9 @@ const adminSchema = new Schema({
     password: { type: String, required: true }, // In a real app, hash this!
     name: { type: String, default: 'Admin' },
     sessionToken: { type: String }, // For server-side session verification
+    resetCode: { type: String }, // 6-digit reset code
+    resetCodeExpiry: { type: Date }, // Expiration time for reset code
+    hasCustomPassword: { type: Boolean, default: false }, // Track if admin set custom password
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

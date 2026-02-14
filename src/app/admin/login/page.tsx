@@ -73,6 +73,12 @@ export default function AdminLoginPage() {
                             </div>
                         </div>
 
+                        <div className="flex items-center justify-end">
+                            <Link href="/admin/forgot-password" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                Forgot password?
+                            </Link>
+                        </div>
+
                         {error && <p className="text-sm text-red-600">{error}</p>}
 
                         <div>
