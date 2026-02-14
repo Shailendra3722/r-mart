@@ -2,18 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, CreditCard, Truck, User, Tag, Bell, Sparkles, ArrowRight } from 'lucide-react';
-
-interface Notification {
-    id: string;
-    type: 'order' | 'payment' | 'delivery' | 'account' | 'product' | 'system';
-    title: string;
-    message: string;
-    isRead: boolean;
-    createdAt: Date;
-    actionUrl?: string;
-    actionLabel?: string;
-    imageUrl?: string;
-}
+import { type Notification } from '@/context/StoreContext';
 
 interface NotificationItemProps {
     notification: Notification;
@@ -72,7 +61,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
     };
 
     // Format timestamp to relative time
-    const getRelativeTime = (date: Date) => {
+    const getRelativeTime = (date: string | Date) => {
         const now = new Date();
         const diff = now.getTime() - new Date(date).getTime();
         const seconds = Math.floor(diff / 1000);
@@ -138,8 +127,8 @@ export default function NotificationItem({ notification, onRead }: NotificationI
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
                         <h4 className={`text-sm leading-tight ${!notification.isRead
-                                ? 'font-bold bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent'
-                                : 'font-semibold text-gray-800'
+                            ? 'font-bold bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent'
+                            : 'font-semibold text-gray-800'
                             }`}>
                             {notification.title}
                         </h4>
