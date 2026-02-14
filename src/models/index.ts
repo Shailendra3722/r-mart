@@ -47,8 +47,16 @@ const orderSchema = new Schema({
         city: { type: String, required: true },
         state: { type: String, required: true }
     },
-    paymentMethod: { type: String, required: true }, // 'COD' | 'UPI' | 'Card'
-    paymentStatus: { type: String, enum: ['Paid', 'Pending', 'Failed'], default: 'Pending' },
+    paymentMethod: { type: String, required: true }, // 'COD' | 'Online'
+    paymentStatus: {
+        type: String,
+        enum: ['Pending', 'Paid', 'Failed', 'Refunded'],
+        default: 'Pending'
+    },
+    razorpayOrderId: { type: String }, // Razorpay order ID
+    razorpayPaymentId: { type: String }, // Razorpay payment ID
+    razorpaySignature: { type: String }, // For verification
+    paidAt: { type: Date }, // Timestamp when payment completed
     transactionId: { type: String },
     customerName: { type: String },
     customerMobile: { type: String },
