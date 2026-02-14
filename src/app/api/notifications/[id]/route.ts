@@ -8,10 +8,11 @@ import { Notification } from '@/models';
  */
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    props: { params: Promise<{ id: string }> }
 ) {
     try {
         await dbConnect();
+        const params = await props.params;
 
         const body = await request.json();
         const { isRead } = body;
@@ -45,10 +46,11 @@ export async function PATCH(
  */
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    props: { params: Promise<{ id: string }> }
 ) {
     try {
         await dbConnect();
+        const params = await props.params;
 
         const notification = await Notification.findOneAndDelete({ id: params.id });
 
