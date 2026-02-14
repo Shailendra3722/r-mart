@@ -1,19 +1,8 @@
 "use client";
 
-import { useStore } from '@/context/StoreContext';
+import { useStore, type Notification } from '@/context/StoreContext';
 import { ShoppingBag, Package, User, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-interface Notification {
-    id: string;
-    type: 'order' | 'product' | 'user' | 'system';
-    title: string;
-    message: string;
-    relatedId?: string;
-    relatedType?: 'order' | 'product' | 'user';
-    isRead: boolean;
-    createdAt: string | Date;
-}
 
 interface NotificationItemProps {
     notification: Notification;
@@ -30,7 +19,7 @@ export function NotificationItem({ notification, onClose }: NotificationItemProp
                 return <ShoppingBag className="h-5 w-5 text-blue-600" />;
             case 'product':
                 return <Package className="h-5 w-5 text-purple-600" />;
-            case 'user':
+            case 'account':
                 return <User className="h-5 w-5 text-green-600" />;
             case 'system':
             default:
@@ -77,8 +66,8 @@ export function NotificationItem({ notification, onClose }: NotificationItemProp
         >
             <div className="flex gap-3">
                 <div className={`mt-0.5 flex-shrink-0 rounded-full p-2 ${notification.type === 'order' ? 'bg-blue-100' :
-                        notification.type === 'product' ? 'bg-purple-100' :
-                            notification.type === 'user' ? 'bg-green-100' : 'bg-slate-100'
+                    notification.type === 'product' ? 'bg-purple-100' :
+                        notification.type === 'user' ? 'bg-green-100' : 'bg-slate-100'
                     }`}>
                     {getIcon()}
                 </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from '@/context/StoreContext';
+import { useStore, type Notification } from '@/context/StoreContext';
 import { NotificationItem } from './NotificationItem';
 import { CheckCheck } from 'lucide-react';
 
