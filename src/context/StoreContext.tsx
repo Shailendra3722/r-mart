@@ -37,10 +37,30 @@ export type Order = {
     awbNumber?: string;
 };
 
+export type Notification = {
+    id: string;
+    type: 'order' | 'payment' | 'delivery' | 'account' | 'product' | 'system';
+    title: string;
+    message: string;
+    userId?: string;
+    targetAudience?: 'admin' | 'user' | 'both';
+    relatedId?: string;
+    relatedType?: 'order' | 'product' | 'user' | 'payment';
+    actionUrl?: string;
+    actionLabel?: string;
+    imageUrl?: string;
+    isRead: boolean;
+    createdAt: string | Date;
+};
+
 type StoreContextType = {
     products: Product[];
     cart: CartItem[];
     orders: Order[];
+    notifications: Notification[];
+    userNotifications: Notification[];
+    unreadCount: number;
+    unreadUserNotificationCount: number;
     itemCount: number;
     cartTotal: number;
     isLoading: boolean;
@@ -53,6 +73,12 @@ type StoreContextType = {
     clearCart: () => void;
     placeOrder: (customerDetails: any, paymentMethod: string, transactionId?: string) => Promise<void>;
     updateOrderStatus: (id: string, status: Order['status'], logisticsData?: { courier: string; trackingId: string; awbNumber: string }) => Promise<void>;
+    fetchNotifications: () => Promise<void>;
+    fetchUserNotifications: () => Promise<void>;
+    markNotificationAsRead: (id: string) => Promise<void>;
+    markAllNotificationsAsRead: () => Promise<void>;
+    markUserNotificationAsRead: (id: string) => Promise<void>;
+    markAllUserNotificationsAsRead: () => Promise<void>;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -62,6 +88,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [userNotifications, setUserNotifications] = useState<Notification[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // Load Cart from LocalStorage (Cart should remain client-side for guests)
@@ -112,7 +140,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         fetchData();
-    }, []);
+        fetchNotifications();
+        fetchUserNotifications();
+
+        // Poll for new notifications every 30 seconds
+        const notificationInterval = setInterval(() => {
+            fetchNotifications();
+            fetchUserNotifications();
+        }, 30000);
+
+        return () => clearInterval(notificationInterval);
+    }, [user]); // Re-run when user changes
 
 
     // --- API ACTIONS ---
@@ -238,6 +276,124 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // --- NOTIFICATION ACTIONS ---
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await fetch('/api/notifications');
+            if (res.ok) {
+                const data = await res.json();
+                setNotifications(data.notifications || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+        }
+    };
+
+    const markNotificationAsRead = async (id: string) => {
+        try {
+            // Optimistic update
+            setNotifications((prev) =>
+                prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+            );
+
+            const res = await fetch(`/api/notifications/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isRead: true }),
+            });
+
+            if (!res.ok) {
+                console.error('Failed to mark notification as read');
+                // Revert on failure
+                await fetchNotifications();
+            }
+        } catch (error) {
+            console.error('Mark notification as read error:', error);
+        }
+    };
+
+    const markAllNotificationsAsRead = async () => {
+        try {
+            // Optimistic update
+            setNotifications((prev) =>
+                prev.map((n) => ({ ...n, isRead: true }))
+            );
+
+            const res = await fetch('/api/notifications/mark-all-read', {
+                method: 'PATCH',
+            });
+
+            if (!res.ok) {
+                console.error('Failed to mark all notifications as read');
+                // Revert on failure
+                await fetchNotifications();
+            }
+        } catch (error) {
+            console.error('Mark all notifications as read error:', error);
+        }
+    };
+
+    // --- USER NOTIFICATION ACTIONS ---
+
+    const fetchUserNotifications = async () => {
+        if (!user?.uid) return;
+
+        try {
+            const res = await fetch(`/api/notifications?userId=${user.uid}&targetAudience=user`);
+            if (res.ok) {
+                const data = await res.json();
+                setUserNotifications(data.notifications || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch user notifications:', error);
+        }
+    };
+
+    const markUserNotificationAsRead = async (id: string) => {
+        try {
+            // Optimistic update
+            setUserNotifications((prev) =>
+                prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+            );
+
+            const res = await fetch(`/api/notifications/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isRead: true }),
+            });
+
+            if (!res.ok) {
+                console.error('Failed to mark user notification as read');
+                await fetchUserNotifications();
+            }
+        } catch (error) {
+            console.error('Mark user notification as read error:', error);
+        }
+    };
+
+    const markAllUserNotificationsAsRead = async () => {
+        if (!user?.uid) return;
+
+        try {
+            // Optimistic update
+            setUserNotifications((prev) =>
+                prev.map((n) => ({ ...n, isRead: true }))
+            );
+
+            const res = await fetch('/api/notifications/mark-all-read', {
+                method: 'PATCH',
+            });
+
+            if (!res.ok) {
+                console.error('Failed to mark all user notifications as read');
+                await fetchUserNotifications();
+            }
+        } catch (error) {
+            console.error('Mark all user notifications as read error:', error);
+        }
+    };
+
     // --- CART ACTIONS (Client Side) ---
 
     const addToCart = (product: Product, selectedSize: string, selectedColor: string) => {
@@ -287,6 +443,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
     const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const unreadCount = notifications.filter((n) => !n.isRead).length;
+    const unreadUserNotificationCount = userNotifications.filter((n) => !n.isRead).length;
 
     return (
         <StoreContext.Provider
@@ -294,6 +452,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 products,
                 cart,
                 orders,
+                notifications,
+                userNotifications,
+                unreadCount,
+                unreadUserNotificationCount,
                 itemCount,
                 cartTotal,
                 isLoading,
@@ -306,6 +468,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 clearCart,
                 placeOrder,
                 updateOrderStatus,
+                fetchNotifications,
+                fetchUserNotifications,
+                markNotificationAsRead,
+                markAllNotificationsAsRead,
+                markUserNotificationAsRead,
+                markAllUserNotificationsAsRead,
             }}
         >
             {children}

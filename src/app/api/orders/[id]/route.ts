@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import { Order } from '@/models';
+import { createOrderNotification, createUserOrderStatusUpdate } from '@/lib/notifications';
 
 export async function PATCH(
     request: Request,
@@ -41,6 +42,27 @@ export async function PATCH(
 
         if (!updatedOrder) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        // Create notification for admin
+        if (status) {
+            await createOrderNotification(
+                updatedOrder.id,
+                updatedOrder.customerName || 'Customer',
+                updatedOrder.total,
+                'status_update',
+                status
+            );
+        }
+
+        // Create notification for user
+        if (status && updatedOrder.userId) {
+            await createUserOrderStatusUpdate(
+                updatedOrder.id,
+                updatedOrder.userId,
+                status,
+                updatedOrder.trackingId
+            );
         }
 
         return NextResponse.json(updatedOrder);

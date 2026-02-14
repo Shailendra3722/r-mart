@@ -1,6 +1,12 @@
-import { Bell, Search } from "lucide-react";
+"use client";
+
+import { Search } from "lucide-react";
+import { NotificationBell } from './NotificationBell';
+import { useStore } from '@/context/StoreContext';
 
 export function Header() {
+    const { unreadCount, fetchNotifications } = useStore();
+
     return (
         <header className="flex h-16 items-center justify-between border-b bg-white px-6">
             <div className="flex items-center">
@@ -16,10 +22,10 @@ export function Header() {
                 </div>
             </div>
             <div className="flex items-center gap-4">
-                <button className="relative p-1 text-slate-400 hover:text-slate-500">
-                    <Bell className="h-6 w-6" />
-                    <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
-                </button>
+                <NotificationBell
+                    unreadCount={unreadCount}
+                    onOpen={fetchNotifications}
+                />
             </div>
         </header>
     );

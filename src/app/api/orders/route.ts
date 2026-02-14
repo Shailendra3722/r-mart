@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import { Order } from '@/models';
+import { createOrderNotification, createUserOrderConfirmation } from '@/lib/notifications';
 
 export async function GET(request: Request) {
     try {
@@ -27,6 +28,25 @@ export async function POST(request: Request) {
         await dbConnect();
         const body = await request.json();
         const newOrder = await Order.create(body);
+
+        // Create notification for admin
+        await createOrderNotification(
+            newOrder.id,
+            newOrder.customerName || 'Guest User',
+            newOrder.total,
+            'new'
+        );
+
+        // Create notification for user
+        if (newOrder.userId) {
+            await createUserOrderConfirmation(
+                newOrder.id,
+                newOrder.userId,
+                newOrder.customerName || 'Customer',
+                newOrder.total
+            );
+        }
+
         return NextResponse.json(newOrder, { status: 201 });
     } catch (error: any) {
         console.error("Order Creation Error:", error);

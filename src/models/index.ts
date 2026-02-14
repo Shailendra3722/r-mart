@@ -58,6 +58,47 @@ const orderSchema = new Schema({
     awbNumber: { type: String }
 });
 
+// --- Notification Schema ---
+const notificationSchema = new Schema({
+    id: { type: String, required: true, unique: true },
+    type: {
+        type: String,
+        enum: ['order', 'payment', 'delivery', 'account', 'product', 'system'],
+        required: true
+    },
+    title: { type: String, required: true },
+    message: { type: String, required: true },
+
+    // User/Admin targeting
+    userId: { type: String }, // If set, notification is for specific user
+    targetAudience: {
+        type: String,
+        enum: ['admin', 'user', 'both'],
+        default: 'admin'
+    },
+
+    // Related entities
+    relatedId: { type: String }, // Reference to Order ID, Product ID, User ID, etc.
+    relatedType: {
+        type: String,
+        enum: ['order', 'product', 'user', 'payment']
+    },
+
+    // Metadata
+    isRead: { type: Boolean, default: false },
+    actionUrl: { type: String }, // Deep link for "View Order", "Track Shipment", etc.
+    actionLabel: { type: String }, // "View Order", "Track Package", "Update Profile"
+    imageUrl: { type: String }, // Product image for product notifications
+
+    createdAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date } // Optional expiry for time-sensitive notifications
+});
+
+// Indexes for efficient user queries
+notificationSchema.index({ userId: 1, createdAt: -1 });
+notificationSchema.index({ userId: 1, isRead: 1 });
+notificationSchema.index({ targetAudience: 1, createdAt: -1 });
+
 // --- User Schema ---
 const userSchema = new Schema({
     uid: { type: String, required: true, unique: true }, // Firebase UID
@@ -75,3 +116,4 @@ const userSchema = new Schema({
 export const Product = models.Product || model('Product', productSchema);
 export const Order = models.Order || model('Order', orderSchema);
 export const User = models.User || model('User', userSchema);
+export const Notification = models.Notification || model('Notification', notificationSchema);
