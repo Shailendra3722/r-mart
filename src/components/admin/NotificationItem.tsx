@@ -67,7 +67,7 @@ export function NotificationItem({ notification, onClose }: NotificationItemProp
             <div className="flex gap-3">
                 <div className={`mt-0.5 flex-shrink-0 rounded-full p-2 ${notification.type === 'order' ? 'bg-blue-100' :
                     notification.type === 'product' ? 'bg-purple-100' :
-                        notification.type === 'user' ? 'bg-green-100' : 'bg-slate-100'
+                        notification.type === 'account' ? 'bg-green-100' : 'bg-slate-100'
                     }`}>
                     {getIcon()}
                 </div>
