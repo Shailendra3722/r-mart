@@ -50,3 +50,53 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: `Failed to create product: ${(error as Error).message}` }, { status: 500 });
     }
 }
+
+export async function PUT(request: Request) {
+    try {
+        await dbConnect();
+        const body = await request.json();
+        const { id, ...updateData } = body;
+
+        if (!id) {
+            return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+        }
+
+        const updatedProduct = await Product.findOneAndUpdate(
+            { id },
+            { $set: updateData },
+            { new: true }
+        );
+
+        if (!updatedProduct) {
+            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(updatedProduct);
+    } catch (error) {
+        console.error("Database Error:", error);
+        return NextResponse.json({ error: `Failed to update product: ${(error as Error).message}` }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request) {
+    try {
+        await dbConnect();
+        const body = await request.json();
+        const { id } = body;
+
+        if (!id) {
+            return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+        }
+
+        const deletedProduct = await Product.findOneAndDelete({ id });
+
+        if (!deletedProduct) {
+            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ success: true, message: 'Product deleted' });
+    } catch (error) {
+        console.error("Database Error:", error);
+        return NextResponse.json({ error: `Failed to delete product: ${(error as Error).message}` }, { status: 500 });
+    }
+}

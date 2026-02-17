@@ -140,16 +140,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         fetchData();
-        fetchNotifications();
-        fetchUserNotifications();
-
-        // Poll for new notifications every 30 seconds
-        const notificationInterval = setInterval(() => {
-            fetchNotifications();
-            fetchUserNotifications();
-        }, 30000);
-
-        return () => clearInterval(notificationInterval);
     }, [user]); // Re-run when user changes
 
 
@@ -185,14 +175,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setProducts((prev) =>
             prev.map((product) => (product.id === id ? { ...product, ...updatedData } : product))
         );
-        // API call would go here (PUT /api/products)
-        // For now implementing optimistic UI only as full PUT route wasn't requested strictly yet
+
+        try {
+            const res = await fetch('/api/products', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, ...updatedData }),
+            });
+            if (!res.ok) {
+                console.error('Failed to update product on server');
+                await fetchData(); // Revert on failure
+            }
+        } catch (error) {
+            console.error('Update Product Error:', error);
+            await fetchData();
+        }
     };
 
     const deleteProduct = async (id: string) => {
         // Optimistic delete
         setProducts((prev) => prev.filter((p) => p.id !== id));
-        // API call would go here (DELETE /api/products)
+
+        try {
+            const res = await fetch('/api/products', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            });
+            if (!res.ok) {
+                console.error('Failed to delete product on server');
+                await fetchData(); // Revert on failure
+            }
+        } catch (error) {
+            console.error('Delete Product Error:', error);
+            await fetchData();
+        }
     };
 
     const placeOrder = async (customerDetails: any, paymentMethod: string, transactionId?: string) => {
@@ -214,6 +231,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 pincode: customerDetails.pincode
             },
             items: cart.map(item => ({
+                id: item.id,
                 productId: item.id,
                 name: item.name,
                 price: item.price,
@@ -241,7 +259,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 const savedOrder = await res.json();
                 setOrders((prev) => [savedOrder, ...prev]);
                 clearCart();
-                alert("Order Placed Successfully!"); // Feedback on success
             } else {
                 const errorData = await res.json();
                 console.error("Failed to place order:", errorData);

@@ -12,6 +12,7 @@ export default function CartPage() {
     const [showPinInput, setShowPinInput] = useState(false);
     const [pin, setPin] = useState('');
     const [validationError, setValidationError] = useState('');
+    const [transactionId, setTransactionId] = useState('');
     const [selectedPayment, setSelectedPayment] = useState('');
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
@@ -436,6 +437,112 @@ export default function CartPage() {
                                     </div>
                                 </div>
 
+                                {/* Razorpay Online Payment */}
+                                <div
+                                    onClick={async () => {
+                                        if (!validateAddress()) return;
+                                        setPaymentProcessing(true);
+                                        try {
+                                            // 1. Create Razorpay order
+                                            const finalTotal = cartTotal > 100 ? cartTotal - 100 : cartTotal;
+                                            const createRes = await fetch('/api/payments/create', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    amount: finalTotal,
+                                                    currency: 'INR',
+                                                    orderId: `ORD-${Date.now()}`
+                                                }),
+                                            });
+                                            const orderData = await createRes.json();
+
+                                            if (!createRes.ok || !orderData.success) {
+                                                throw new Error(orderData.error || 'Failed to create payment order');
+                                            }
+
+                                            // 2. Load Razorpay SDK
+                                            const loadRazorpay = (): Promise<boolean> => {
+                                                return new Promise((resolve) => {
+                                                    if ((window as any).Razorpay) {
+                                                        resolve(true);
+                                                        return;
+                                                    }
+                                                    const script = document.createElement('script');
+                                                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                                                    script.onload = () => resolve(true);
+                                                    script.onerror = () => resolve(false);
+                                                    document.body.appendChild(script);
+                                                });
+                                            };
+
+                                            const loaded = await loadRazorpay();
+                                            if (!loaded) throw new Error('Failed to load payment SDK');
+
+                                            // 3. Open Razorpay checkout modal
+                                            const options = {
+                                                key: orderData.keyId,
+                                                amount: orderData.amount,
+                                                currency: orderData.currency,
+                                                name: 'R Mart',
+                                                description: 'Order Payment',
+                                                order_id: orderData.orderId,
+                                                handler: async (response: any) => {
+                                                    try {
+                                                        // 4. Verify payment
+                                                        const verifyRes = await fetch('/api/payments/verify', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({
+                                                                razorpayOrderId: response.razorpay_order_id,
+                                                                razorpayPaymentId: response.razorpay_payment_id,
+                                                                razorpaySignature: response.razorpay_signature,
+                                                                orderId: orderData.orderId
+                                                            }),
+                                                        });
+
+                                                        if (verifyRes.ok) {
+                                                            placeOrder(addressDetails, 'Razorpay', response.razorpay_payment_id);
+                                                            setSuccess(true);
+                                                        } else {
+                                                            alert('Payment verification failed. Please contact support.');
+                                                        }
+                                                    } catch {
+                                                        alert('Payment verification error. Please contact support.');
+                                                    }
+                                                    setPaymentProcessing(false);
+                                                },
+                                                prefill: {
+                                                    name: addressDetails.name,
+                                                    contact: addressDetails.mobile,
+                                                },
+                                                theme: { color: '#059669' },
+                                                modal: {
+                                                    ondismiss: () => setPaymentProcessing(false)
+                                                }
+                                            };
+
+                                            const razorpay = new (window as any).Razorpay(options);
+                                            razorpay.open();
+                                        } catch (error: any) {
+                                            console.error('Razorpay error:', error);
+                                            alert(error.message || 'Payment failed. Please try again.');
+                                            setPaymentProcessing(false);
+                                        }
+                                    }}
+                                    className={`cursor-pointer rounded-lg border-2 border-slate-200 bg-white p-4 transition-all hover:border-indigo-500 hover:shadow-md ${paymentProcessing ? 'opacity-50 pointer-events-none' : ''}`}
+                                >
+                                    <div className="flex items-center">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50">
+                                            <span className="text-2xl">💳</span>
+                                        </div>
+                                        <div className="ml-4">
+                                            <span className="block font-semibold text-slate-900">Pay Online (Razorpay)</span>
+                                            <span className="text-xs text-slate-600">Cards, Wallets, Net Banking & more</span>
+                                        </div>
+                                        <span className="ml-auto rounded bg-indigo-100 px-2 py-1 text-xs font-bold text-indigo-800">SECURE</span>
+                                    </div>
+                                </div>
+
                                 {/* COD Option */}
                                 <div
                                     onClick={() => {
@@ -593,26 +700,21 @@ export default function CartPage() {
                                     <input
                                         type="text"
                                         placeholder="Enter UTR / Transaction ID"
+                                        value={transactionId}
                                         className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary"
-                                        onChange={(e) => {
-                                            // Basic validation or state update could go here if we tracked it separately, 
-                                            // but for now we'll just use a ref or local var if needed, 
-                                            // or simpler: just stick it in a state
-                                            (window as any).tempTransactionId = e.target.value;
-                                        }}
+                                        onChange={(e) => setTransactionId(e.target.value)}
                                     />
                                 </div>
 
                                 <button
                                     onClick={() => {
-                                        const txId = (window as any).tempTransactionId;
-                                        if (!txId || txId.length < 4) {
+                                        if (!transactionId || transactionId.length < 4) {
                                             alert("Please enter a valid Transaction ID / UTR Number to verify payment.");
                                             return;
                                         }
                                         setPaymentProcessing(true);
                                         setTimeout(() => {
-                                            placeOrder(addressDetails, selectedPayment, txId);
+                                            placeOrder(addressDetails, selectedPayment, transactionId);
                                             setPaymentProcessing(false);
                                             setShowPaymentModal(false);
                                             setSuccess(true);

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Truck, ShieldCheck, Clock, Zap } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { CountdownTimer } from "@/components/ui/CountdownTimer";
@@ -49,8 +50,13 @@ export default function LandingPage() {
                 <div className="absolute left-2 top-2 z-10 rounded bg-green-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
                   Special
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={product.image || '/placeholder.png'} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                <Image
+                  src={product.image || '/placeholder.png'}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover transition-transform group-hover:scale-105"
+                />
               </div>
               <div className="mt-2 text-center">
                 <h3 className="text-xs sm:text-sm font-medium text-slate-800 truncate">{product.name}</h3>
@@ -69,11 +75,13 @@ export default function LandingPage() {
           {/* Main Banner */}
           <Link href="/products?category=sale" className="group relative block overflow-hidden rounded-xl bg-emerald-600 md:col-span-2 h-[200px] sm:h-auto">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/80 to-transparent z-10"></div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=800"
               alt="Big Sale"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              fill
+              sizes="(max-width: 768px) 100vw, 66vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              priority
             />
             <div className="absolute bottom-0 left-0 p-6 sm:p-8 z-20">
               <span className="mb-2 inline-block rounded-full bg-yellow-400 px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase text-slate-900">
@@ -90,11 +98,12 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-1">
             <Link href="/products?category=men" className="group relative block overflow-hidden rounded-xl bg-blue-600 h-[150px] sm:h-auto">
               <div className="absolute inset-0 bg-black/20 z-10 transition-colors group-hover:bg-black/30"></div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=400"
                 alt="Men's Collection"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute bottom-0 left-0 p-4 z-20">
                 <h3 className="text-sm sm:text-xl font-bold text-white">Men</h3>
@@ -103,11 +112,12 @@ export default function LandingPage() {
             </Link>
             <Link href="/products?category=women" className="group relative block overflow-hidden rounded-xl bg-purple-600 h-[150px] sm:h-auto">
               <div className="absolute inset-0 bg-black/20 z-10 transition-colors group-hover:bg-black/30"></div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&q=80&w=400"
                 alt="Women's Style"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute bottom-0 left-0 p-4 z-20">
                 <h3 className="text-sm sm:text-xl font-bold text-white">Women</h3>

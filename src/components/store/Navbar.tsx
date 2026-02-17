@@ -6,6 +6,7 @@ import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 export function Navbar() {
     const { itemCount } = useStore();
@@ -146,6 +147,9 @@ export function Navbar() {
                             </button>
                         </Link>
                     )}
+
+                    {/* Notification Bell */}
+                    <NotificationBell />
 
                     <Link href="/orders" className="font-semibold text-slate-900 hover:text-emerald-600">
                         Orders

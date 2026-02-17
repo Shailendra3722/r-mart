@@ -1,40 +1,33 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { Notification } from '@/models';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 /**
  * PATCH /api/notifications/[id]
- * Mark a specific notification as read/unread
+ * Mark a single notification as read
  */
 export async function PATCH(
     request: Request,
-    props: { params: Promise<{ id: string }> }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        await dbConnect();
-        const params = await props.params;
+        const resolvedParams = await params;
+        const notificationId = resolvedParams.id;
 
-        const body = await request.json();
-        const { isRead } = body;
+        const notificationRef = doc(db, 'notifications', notificationId);
+        await updateDoc(notificationRef, {
+            read: true
+        });
 
-        const notification = await Notification.findOneAndUpdate(
-            { id: params.id },
-            { $set: { isRead: isRead !== undefined ? isRead : true } },
-            { new: true }
-        );
+        return NextResponse.json({
+            success: true,
+            message: 'Notification marked as read'
+        });
 
-        if (!notification) {
-            return NextResponse.json(
-                { error: 'Notification not found' },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json(notification);
-    } catch (error) {
-        console.error('Failed to update notification:', error);
+    } catch (error: any) {
+        console.error('Mark as read error:', error);
         return NextResponse.json(
-            { error: 'Failed to update notification' },
+            { success: false, error: `Failed to mark notification as read: ${error.message}` },
             { status: 500 }
         );
     }
@@ -42,30 +35,28 @@ export async function PATCH(
 
 /**
  * DELETE /api/notifications/[id]
- * Delete a specific notification
+ * Delete a notification
  */
 export async function DELETE(
     request: Request,
-    props: { params: Promise<{ id: string }> }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        await dbConnect();
-        const params = await props.params;
+        const resolvedParams = await params;
+        const notificationId = resolvedParams.id;
 
-        const notification = await Notification.findOneAndDelete({ id: params.id });
+        const notificationRef = doc(db, 'notifications', notificationId);
+        await deleteDoc(notificationRef);
 
-        if (!notification) {
-            return NextResponse.json(
-                { error: 'Notification not found' },
-                { status: 404 }
-            );
-        }
+        return NextResponse.json({
+            success: true,
+            message: 'Notification deleted'
+        });
 
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Failed to delete notification:', error);
+    } catch (error: any) {
+        console.error('Delete notification error:', error);
         return NextResponse.json(
-            { error: 'Failed to delete notification' },
+            { success: false, error: `Failed to delete notification: ${error.message}` },
             { status: 500 }
         );
     }

@@ -1,99 +1,67 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { Notification } from '@/models';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 
 /**
  * GET /api/notifications
- * Fetch all notifications or only unread ones
+ * Fetch user notifications from Firestore
  */
 export async function GET(request: Request) {
     try {
-        await dbConnect();
-
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
-        const targetAudience = searchParams.get('targetAudience') || 'admin';
-        const unreadOnly = searchParams.get('unreadOnly') === 'true';
+        const limitCount = parseInt(searchParams.get('limit') || '50');
 
-        let query: any = {};
-
-        // Filter by target audience
-        if (targetAudience === 'admin' || targetAudience === 'user') {
-            query.targetAudience = { $in: [targetAudience, 'both'] };
-        }
-
-        // Filter by user ID for user-specific notifications
-        if (userId) {
-            query.userId = userId;
-        }
-
-        // Filter unread only
-        if (unreadOnly) {
-            query.isRead = false;
-        }
-
-        const notifications = await Notification.find(query).sort({ createdAt: -1 }).limit(100);
-        const unreadCount = await Notification.countDocuments({
-            ...query,
-            isRead: false
-        });
-
-        return NextResponse.json({
-            notifications,
-            unreadCount,
-            total: notifications.length
-        });
-    } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch notifications' },
-            { status: 500 }
-        );
-    }
-}
-
-/**
- * POST /api/notifications
- * Create a new notification manually
- */
-export async function POST(request: Request) {
-    try {
-        await dbConnect();
-
-        const body = await request.json();
-        const { type, title, message, userId, targetAudience, relatedId, relatedType, actionUrl, actionLabel, imageUrl } = body;
-
-        // Validate required fields
-        if (!type || !title || !message) {
+        if (!userId) {
             return NextResponse.json(
-                { error: 'Missing required fields: type, title, message' },
+                { success: false, error: 'User ID is required' },
                 { status: 400 }
             );
         }
 
-        const notificationData = {
-            id: `NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            type,
-            title,
-            message,
-            userId,
-            targetAudience: targetAudience || 'admin',
-            relatedId,
-            relatedType,
-            actionUrl,
-            actionLabel,
-            imageUrl,
-            isRead: false,
-            createdAt: new Date()
-        };
+        // Query notifications for this user
+        const notificationsRef = collection(db, 'notifications');
+        const notificationsQuery = query(
+            notificationsRef,
+            where('userId', '==', userId),
+            orderBy('createdAt', 'desc'),
+            limit(limitCount)
+        );
 
-        const notification = await Notification.create(notificationData);
+        const notificationsSnapshot = await getDocs(notificationsQuery);
 
-        return NextResponse.json(notification, { status: 201 });
+        const notifications = notificationsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                userId: data.userId,
+                type: data.type,
+                title: data.title,
+                message: data.message,
+                read: data.read || false,
+                createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+                actionUrl: data.actionUrl,
+                actionLabel: data.actionLabel,
+                imageUrl: data.imageUrl,
+                relatedId: data.relatedId,
+                relatedType: data.relatedType
+            };
+        });
+
+        // Calculate unread count
+        const unreadCount = notifications.filter(n => !n.read).length;
+
+        return NextResponse.json({
+            success: true,
+            notifications,
+            unreadCount,
+            total: notifications.length
+        });
+
     } catch (error: any) {
-        console.error('Failed to create notification:', error);
+        console.error('Fetch notifications error:', error);
         return NextResponse.json(
-            { error: error.message || 'Failed to create notification' },
+            { success: false, error: `Failed to fetch notifications: ${error.message}` },
             { status: 500 }
         );
     }

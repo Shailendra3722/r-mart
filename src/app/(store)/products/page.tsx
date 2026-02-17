@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useStore } from '@/context/StoreContext';
 import { X, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
 function ProductsContent() {
@@ -171,14 +172,13 @@ function ProductsContent() {
                     {filteredProducts.map((product) => (
                         <div key={product.id} className="group relative">
                             <Link href={`/products/${product.id}`} className="block">
-                                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-slate-200 lg:aspect-none group-hover:opacity-75 transition-opacity lg:h-80">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={product.image || '/placeholder.png'}
-                                        alt={product.name}
-                                        className="h-full w-full object-cover object-center lg:h-full lg:w-full"
-                                        onError={(e) => (e.target as HTMLImageElement).src = '/placeholder.png'}
-                                    />
+                                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-slate-200 lg:aspect-none group-hover:opacity-75 transition-opacity lg:h-80 relative">                                    <Image
+                                    src={product.image || '/placeholder.png'}
+                                    alt={product.name}
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                    className="object-cover object-center"
+                                />
                                 </div>
                                 <div className="mt-4 flex justify-between">
                                     <div>
