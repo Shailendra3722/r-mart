@@ -11,6 +11,8 @@ export type Product = {
     images?: string[]; // Additional images
     sizes?: string[]; // e.g., ['S', 'M', 'L']
     colors?: string[]; // e.g., ['Red', 'Blue']
+    avgRating?: number; // Average rating from reviews
+    reviewCount?: number; // Total number of reviews
 };
 
 export const initialProducts: Product[] = [

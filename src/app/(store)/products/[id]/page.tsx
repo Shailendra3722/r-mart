@@ -7,13 +7,11 @@ import Link from 'next/link';
 import TapButton from '@/components/animations/TapButton';
 import FadeIn from '@/components/animations/FadeIn';
 import ScaleHover from '@/components/animations/ScaleHover';
+import StarRating from '@/components/ui/StarRating';
+import ReviewForm from '@/components/reviews/ReviewForm';
+import ReviewsList from '@/components/reviews/ReviewsList';
 
-// Dummy Reviews Data
-const reviews = [
-    { id: 1, name: "Rahul S.", rating: 5, date: "2 days ago", comment: "Absolutely loved the quality! Fits perfectly and feels premium." },
-    { id: 2, name: "Priya M.", rating: 4, date: "1 week ago", comment: "Great fabric, but delivery took a day longer than expected." },
-    { id: 3, name: "Amit K.", rating: 5, date: "2 weeks ago", comment: "Best purchase I've made this month. Highly recommended!" },
-];
+
 
 export default function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { products, addToCart } = useStore();
@@ -30,6 +28,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
     const [selectedSize, setSelectedSize] = useState('M');
     const [selectedColor, setSelectedColor] = useState('White');
     const [adding, setAdding] = useState(false);
+    const [reviewRefresh, setReviewRefresh] = useState(0);
 
     const handleAddToCart = () => {
         setAdding(true);
@@ -98,11 +97,13 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
                     {/* Ratings Summary */}
                     <FadeIn direction="left" delay={0.3}>
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="flex items-center bg-yellow-400 text-white px-2 py-0.5 rounded text-sm font-bold">
-                                4.5 <Star className="h-3 w-3 ml-1 fill-current" />
-                            </div>
-                            <span className="text-sm text-slate-500 border-b border-dashed border-slate-300 cursor-pointer hover:text-primary">
-                                117 Verified Reviews
+                            <StarRating
+                                rating={product.avgRating || 0}
+                                size="md"
+                                showNumber={true}
+                            />
+                            <span className="text-sm text-slate-500">
+                                ({product.reviewCount || 0} {product.reviewCount === 1 ? 'Review' : 'Reviews'})
                             </span>
                         </div>
                     </FadeIn>
@@ -203,38 +204,21 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
 
             {/* --- Reviews Section --- */}
             <div className="mt-20 border-t border-slate-200 pt-16 max-w-4xl mx-auto">
-                <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">Customer Reviews</h2>
+                <h2 className="text-2xl font-bold text-slate-900 mb-8">Customer Reviews</h2>
 
-                <div className="space-y-6">
-                    {reviews.map((review) => (
-                        <FadeIn key={review.id} direction="up" className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                                        <User className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">{review.name}</h4>
-                                        <p className="text-xs text-slate-500">{review.date}</p>
-                                    </div>
-                                </div>
-                                <div className="flex bg-slate-50 px-2 py-1 rounded">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <p className="text-slate-600 ml-13 pl-13">{review.comment}</p>
-                        </FadeIn>
-                    ))}
+                {/* Review Form */}
+                <div className="mb-12">
+                    <ReviewForm
+                        productId={product.id}
+                        onReviewSubmitted={() => setReviewRefresh(prev => prev + 1)}
+                    />
                 </div>
 
-                <div className="mt-8 text-center">
-                    <button className="text-primary font-semibold hover:underline">View All 117 Reviews</button>
-                </div>
+                {/* Reviews List */}
+                <ReviewsList
+                    productId={product.id}
+                    refreshTrigger={reviewRefresh}
+                />
             </div>
         </div>
     );

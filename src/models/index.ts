@@ -14,6 +14,8 @@ const productSchema = new Schema({
     discount: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
     reviews: { type: Number, default: 0 },
+    avgRating: { type: Number, default: 0 }, // Average rating from Firestore reviews
+    reviewCount: { type: Number, default: 0 }, // Total review count from Firestore
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
