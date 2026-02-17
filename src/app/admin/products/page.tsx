@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/context/StoreContext';
-import { Plus, Pencil, Trash2, Search, Filter, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Filter, X, Sparkles } from 'lucide-react';
 
 export default function ProductsPage() {
     const { products, addProduct, updateProduct, deleteProduct } = useStore();
@@ -71,6 +71,45 @@ export default function ProductsPage() {
             name: '', description: '', category: 'Men', price: '', discount: '', stock: '', status: 'In Stock',
             image: '/placeholder.png', images: [], sizes: [], colors: []
         });
+        setGenerateError('');
+    }
+
+    const handleGenerateDescription = async () => {
+        if (!formData.name.trim()) {
+            setGenerateError('Please enter a product name first');
+            return;
+        }
+
+        setIsGenerating(true);
+        setGenerateError('');
+
+        try {
+            const response = await fetch('/api/products/generate-description', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productName: formData.name }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to generate description');
+            }
+
+            if (data.success && data.description) {
+                setFormData({ ...formData, description: data.description });
+                setGenerateError('');
+            } else {
+                throw new Error('Invalid response from server');
+            }
+        } catch (error: any) {
+            console.error('Generation error:', error);
+            setGenerateError(error.message || 'Failed to generate description');
+        } finally {
+            setIsGenerating(false);
+        }
     }
 
     const toggleSelection = (item: string, list: string[], field: 'sizes' | 'colors') => {
@@ -138,6 +177,8 @@ export default function ProductsPage() {
     };
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generateError, setGenerateError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -298,10 +339,38 @@ export default function ProductsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700">Description</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-sm font-medium text-slate-700">Description</label>
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateDescription}
+                                        disabled={isGenerating || !formData.name.trim()}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-md hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {isGenerating ? (
+                                            <>
+                                                <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Generating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className="h-3 w-3" />
+                                                Generate with AI
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                {generateError && (
+                                    <div className="mb-2 rounded-md bg-red-50 px-3 py-2 text-xs text-red-800 border border-red-200">
+                                        {generateError}
+                                    </div>
+                                )}
                                 <textarea
                                     required
-                                    rows={3}
+                                    rows={5}
                                     placeholder="Add details about fabric quality, fit, and care..."
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
