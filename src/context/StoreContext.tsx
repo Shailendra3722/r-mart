@@ -57,6 +57,7 @@ type StoreContextType = {
     products: Product[];
     cart: CartItem[];
     orders: Order[];
+    wishlist: Product[];
     notifications: Notification[];
     userNotifications: Notification[];
     unreadCount: number;
@@ -71,6 +72,8 @@ type StoreContextType = {
     removeFromCart: (cartId: string) => void;
     updateQuantity: (cartId: string, delta: number) => void;
     clearCart: () => void;
+    addToWishlist: (product: Product) => void;
+    removeFromWishlist: (id: string) => void;
     placeOrder: (customerDetails: any, paymentMethod: string, transactionId?: string) => Promise<void>;
     updateOrderStatus: (id: string, status: Order['status'], logisticsData?: { courier: string; trackingId: string; awbNumber: string }) => Promise<void>;
     fetchNotifications: () => Promise<void>;
@@ -88,9 +91,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [wishlist, setWishlist] = useState<Product[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [userNotifications, setUserNotifications] = useState<Notification[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Load Wishlist from LocalStorage
+    useEffect(() => {
+        const savedWishlist = localStorage.getItem('rmart-wishlist');
+        if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+    }, []);
+
+    // Save Wishlist to LocalStorage
+    useEffect(() => {
+        localStorage.setItem('rmart-wishlist', JSON.stringify(wishlist));
+    }, [wishlist]);
 
     // Load Cart from LocalStorage (Cart should remain client-side for guests)
     useEffect(() => {
@@ -411,6 +426,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // --- WISHLIST ACTIONS ---
+
+    const addToWishlist = (product: Product) => {
+        setWishlist((prev) => {
+            if (prev.some(p => p.id === product.id)) return prev;
+            return [...prev, product];
+        });
+    };
+
+    const removeFromWishlist = (id: string) => {
+        setWishlist((prev) => prev.filter((p) => p.id !== id));
+    };
+
     // --- CART ACTIONS (Client Side) ---
 
     const addToCart = (product: Product, selectedSize: string, selectedColor: string) => {
@@ -469,6 +497,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 products,
                 cart,
                 orders,
+                wishlist,
                 notifications,
                 userNotifications,
                 unreadCount,
@@ -483,6 +512,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 removeFromCart,
                 updateQuantity,
                 clearCart,
+                addToWishlist,
+                removeFromWishlist,
                 placeOrder,
                 updateOrderStatus,
                 fetchNotifications,

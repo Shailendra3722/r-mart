@@ -4,6 +4,7 @@ import "./globals.css";
 import { clsx } from "clsx";
 import { StoreProvider } from "@/context/StoreContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,7 +13,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "R Mart | Premium Rural Commerce",
-  description: "The best fashion for men, women, and kids.",
+  description: "The best fashion for men, women, and kids. Shop trending clothes, accessories & more at unbeatable prices.",
 };
 
 export const viewport: Viewport = {
@@ -30,13 +31,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={clsx(inter.variable, "antialiased bg-background text-foreground")}
+        className={clsx(inter.variable, "antialiased bg-background text-foreground transition-colors duration-300")}
       >
-        <AuthProvider>
-          <StoreProvider>
-            {children}
-          </StoreProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <StoreProvider>
+              {children}
+            </StoreProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
