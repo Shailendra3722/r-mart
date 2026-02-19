@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useStore } from '@/context/StoreContext';
+import { Loading } from '@/components/ui/Loading';
 import { X, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,7 +10,7 @@ import { useSearchParams } from 'next/navigation';
 
 function ProductsContent() {
     const searchParams = useSearchParams();
-    const { products, addToCart } = useStore();
+    const { products, addToCart, isLoading } = useStore();
 
     // Initialize state from URL params
     const initialCategory = searchParams.get('category') || 'All';
@@ -63,6 +64,10 @@ function ProductsContent() {
     };
 
     const activeFiltersCount = (selectedCategory !== 'All' ? 1 : 0) + (selectedPrice !== 'all' ? 1 : 0);
+
+    if (isLoading) {
+        return <Loading />;
+    }
 
     return (
         <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">

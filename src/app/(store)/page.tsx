@@ -8,6 +8,7 @@ import { CountdownTimer } from "@/components/ui/CountdownTimer";
 import { CategoryStrip } from "@/components/store/CategoryStrip";
 import { HeroCarousel } from "@/components/store/HeroCarousel";
 import { QuickViewModal } from "@/components/store/QuickViewModal";
+import { Loading } from "@/components/ui/Loading";
 import { Product } from "@/lib/data";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -22,7 +23,7 @@ const testimonials = [
 const brands = ["Nike", "Adidas", "Puma", "Levi's", "H&M", "Zara", "Raymond", "Allen Solly", "Peter England", "Van Heusen"];
 
 export default function LandingPage() {
-  const { products, addToWishlist, removeFromWishlist, wishlist } = useStore();
+  const { products, addToWishlist, removeFromWishlist, wishlist, isLoading } = useStore();
   const targetDate = new Date(new Date().getTime() + 12 * 60 * 60 * 1000);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
@@ -48,6 +49,10 @@ export default function LandingPage() {
       setEmail("");
     }
   };
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="flex flex-col gap-6 pb-10 bg-slate-50 dark:bg-slate-950 transition-colors">

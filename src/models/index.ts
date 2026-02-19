@@ -109,6 +109,23 @@ notificationSchema.index({ userId: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, isRead: 1 });
 notificationSchema.index({ targetAudience: 1, createdAt: -1 });
 
+// --- Contact Schema ---
+const contactSchema = new Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    subject: { type: String, required: true },
+    message: { type: String, required: true },
+    read: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+});
+
+// --- Subscriber Schema ---
+const subscriberSchema = new Schema({
+    email: { type: String, required: true, unique: true },
+    subscribedAt: { type: Date, default: Date.now },
+    isActive: { type: Boolean, default: true }
+});
+
 // --- User Schema ---
 const userSchema = new Schema({
     uid: { type: String, required: true, unique: true }, // Firebase UID
@@ -127,3 +144,5 @@ export const Product = models.Product || model('Product', productSchema);
 export const Order = models.Order || model('Order', orderSchema);
 export const User = models.User || model('User', userSchema);
 export const Notification = models.Notification || model('Notification', notificationSchema);
+export const Contact = models.Contact || model('Contact', contactSchema);
+export const Subscriber = models.Subscriber || model('Subscriber', subscriberSchema);

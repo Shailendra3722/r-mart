@@ -28,6 +28,34 @@ export default function AccountPage() {
         name: '', mobile: '', address: '', landmark: '', city: '', state: '', pincode: ''
     });
 
+    // Avatar State
+    const [showAvatarModal, setShowAvatarModal] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState('');
+    const [updatingAvatar, setUpdatingAvatar] = useState(false);
+
+    const handleUpdateAvatar = async () => {
+        if (!avatarUrl || !user?.uid) return;
+        setUpdatingAvatar(true);
+        try {
+            const res = await fetch('/api/users/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: user.uid, photoURL: avatarUrl })
+            });
+            if (res.ok) {
+                // Ideally reload user context, but for now reload page
+                window.location.reload();
+            } else {
+                alert('Failed to update avatar');
+            }
+        } catch {
+            alert('Error updating avatar');
+        } finally {
+            setUpdatingAvatar(false);
+            setShowAvatarModal(false);
+        }
+    };
+
     useEffect(() => {
         const saved = localStorage.getItem('rmart-addresses');
         if (saved) setAddresses(JSON.parse(saved));
@@ -103,12 +131,21 @@ export default function AccountPage() {
             {activeTab === 'profile' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
-                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700">
-                            <img
-                                src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=059669&color=fff&size=80`}
-                                alt="Avatar"
-                                className="h-16 w-16 rounded-full ring-4 ring-emerald-50 dark:ring-emerald-900/30"
-                            />
+                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700 relative">
+                            <div className="relative group">
+                                <img
+                                    src={user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=059669&color=fff&size=80`}
+                                    alt="Avatar"
+                                    className="h-16 w-16 rounded-full ring-4 ring-emerald-50 dark:ring-emerald-900/30 object-cover"
+                                />
+                                <button
+                                    onClick={() => setShowAvatarModal(true)}
+                                    className="absolute bottom-0 right-0 bg-slate-900 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Change Avatar"
+                                >
+                                    <Edit3 className="h-3 w-3" />
+                                </button>
+                            </div>
                             <div>
                                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">{user?.name || 'R Mart Customer'}</h2>
                                 {user?.emailVerified && (
@@ -118,6 +155,37 @@ export default function AccountPage() {
                                 )}
                             </div>
                         </div>
+
+                        {/* Avatar Modal */}
+                        {showAvatarModal && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                                <div className="w-full max-w-sm rounded-xl bg-white dark:bg-slate-800 p-6 shadow-xl">
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Update Profile Picture</h3>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Image URL"
+                                        value={avatarUrl}
+                                        onChange={(e) => setAvatarUrl(e.target.value)}
+                                        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-sm mb-4 focus:ring-2 focus:ring-primary outline-none"
+                                    />
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            onClick={() => setShowAvatarModal(false)}
+                                            className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleUpdateAvatar}
+                                            disabled={!avatarUrl || updatingAvatar}
+                                            className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50"
+                                        >
+                                            {updatingAvatar ? 'Saving...' : 'Save'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="rounded-lg bg-slate-50 dark:bg-slate-700/50 p-4">
