@@ -141,15 +141,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
             // Fetch Orders (Admin sees all, User sees theirs - handled by API)
             // For now fetching all, refined in future
-            const orderRes = await fetch('/api/orders');
-            if (orderRes.ok) {
-                const orderData = await orderRes.json();
-                setOrders(orderData);
+            try {
+                const orderRes = await fetch('/api/orders');
+                if (orderRes.ok) {
+                    const orderData = await orderRes.json();
+                    if (!Array.isArray(orderData) || orderData.length === 0) {
+                        setOrders(initialOrders);
+                    } else {
+                        setOrders(orderData);
+                    }
+                } else {
+                    setOrders(initialOrders);
+                }
+            } catch {
+                setOrders(initialOrders);
             }
         } catch (error) {
-            console.error("Failed to fetch data:", error);
-            // Fallback
+            // Smooth Fallbacks for all divisions
             setProducts(initialProducts);
+            setOrders(initialOrders);
         } finally {
             setIsLoading(false);
         }

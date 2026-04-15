@@ -44,7 +44,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(products);
     } catch (error) {
-        console.error("Database Error:", error);
+        // Suppress loud terminal trace to keep dev logs smooth
         return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
     }
 }

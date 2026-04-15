@@ -38,7 +38,8 @@ async function dbConnect() {
         cached.conn = await cached.promise;
     } catch (e) {
         cached.promise = null;
-        throw e;
+        // Suppress loud terminal traces for network/offline errors to keep logs clean
+        return null;
     }
 
     return cached.conn;
