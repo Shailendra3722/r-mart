@@ -26,7 +26,21 @@ export async function GET(request: Request) {
             ];
         }
 
-        const products = await Product.find(query).sort({ createdAt: -1 });
+        let products = await Product.find(query).sort({ createdAt: -1 });
+
+        // Auto-seed if database is empty and no specific query filters are applied
+        if (products.length === 0 && !search && (!category || category === 'All')) {
+            const { initialProducts } = await import('@/lib/data');
+            try {
+                await Product.insertMany(initialProducts);
+                products = await Product.find(query).sort({ createdAt: -1 });
+                console.log("Auto-seeded initial realistic products into MongoDB");
+            } catch (seedError) {
+                console.error("Failed to auto-seed database:", seedError);
+                // Return in-memory initialProducts as a fallback
+                return NextResponse.json(initialProducts);
+            }
+        }
 
         return NextResponse.json(products);
     } catch (error) {

@@ -128,13 +128,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             const prodRes = await fetch('/api/products');
             if (prodRes.ok) {
                 const prodData = await prodRes.json();
-                // If DB is empty, use initialProducts (and optionally seed DB later)
-                if (prodData.length === 0) {
+                // If DB is empty or returns an error object without array, use initialProducts
+                if (!Array.isArray(prodData) || prodData.length === 0) {
                     setProducts(initialProducts);
                     // Optional: Seed DB here if needed
                 } else {
                     setProducts(prodData);
                 }
+            } else {
+                setProducts(initialProducts);
             }
 
             // Fetch Orders (Admin sees all, User sees theirs - handled by API)
