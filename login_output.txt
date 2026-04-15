@@ -1,0 +1,5 @@
+Vercel CLI 50.9.2
+
+  Visit https://vercel.com/oauth/device?user_code=LCTW-ZRQB
+  Press [ENTER] to open the browser
+Waiting for authentication...

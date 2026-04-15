@@ -3,6 +3,8 @@ import dbConnect from '@/lib/db';
 import { Order } from '@/models';
 import { createOrderNotification, createUserOrderConfirmation } from '@/lib/notifications';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         await dbConnect();

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/notifications
  * Fetch user notifications from Firestore
